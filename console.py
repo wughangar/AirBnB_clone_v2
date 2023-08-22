@@ -115,16 +115,42 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
+        args = args.split()
         if not args:
             print("** class name missing **")
-            return
-        elif args not in HBNBCommand.classes:
+        elif args[0] not in globals():
             print("** class doesn't exist **")
-            return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+        else:
+            cls = globals().get(args[0])
+            obj = cls()
+
+            param_str = " ".join(args[1:])
+            param_pairs = param_str.split(",")
+            for pair in param_pairs:
+                pair = pair.strip()
+                if '=' not in pair:
+                    print("** invalid parameter format:", pair)
+                    continue
+                key, value = pair.split("=", 1)
+                key = key.strip()
+                value = value.strip()
+
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1].replace('_', ' ')
+                elif '.' in value:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        print("** invalid float value **", value)
+                        continue
+                else:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass
+                setattr(obj, key, value)
+            obj.save()
+            print(obj.id)
 
     def help_create(self):
         """ Help information for the create method """
@@ -319,6 +345,7 @@ class HBNBCommand(cmd.Cmd):
         """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
+
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
