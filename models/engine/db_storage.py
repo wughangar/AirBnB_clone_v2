@@ -7,7 +7,23 @@ from models.base_model import Base
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+from console import HBNBCommand
+from models.city import City
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.amenity import Amenity
+from models.review import Review
 
+
+classes = {
+        'City': City,
+        'Place': Place,
+        'State': State,
+        'User': User,
+        'Amenity': Amenity,
+        'Review': Review
+        }
 
 class DBStorage:
     """
@@ -33,16 +49,15 @@ class DBStorage:
         """
         query on the current db session
         """
-        classes = [key for key, value in globals().items() if isinstance(value, type)]
         objs = {}
         if cls:
-            query = self.__session.query(globals()[cls])
+            query = self.__session.query(cls)
             for obj in query:
                 key = "{}.{}".format(obj.__class__.__name__, obj.id)
                 objs[key] = obj
         else:
             for cls in classes:
-                query = self.__session.query(globals()[cls])
+                query = self.__session.query(cls)
                 for obj in query:
                     key = "{}.{}".format(obj.__class__.__name__, obj.id)
                     objs[key] = obj
