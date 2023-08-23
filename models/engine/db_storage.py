@@ -20,12 +20,12 @@ class DBStorage:
         """
         creating and connecting engine to database
         """
-        self.__engine = crear_engine('mysql+mysqldb://{}:{}@{}/{}'
-                                     .format(getenv('HBNB_MYSQL_USER')
+        self.__engine = create_engine('mysql+mysqldb://{}:{}@{}/{}'
+                                     .format(getenv('HBNB_MYSQL_USER'),
                                              getenv('HBNB_MYSQL_PWD'),
                                              getenv('HBNB_MYSQL_HOST'),
                                              getenv('HBNB_MYSQL_DB')),
-                                     pool.pre_ping=True)
+                                     pool_pre_ping=True)
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
 
@@ -71,7 +71,12 @@ class DBStorage:
         """
         create all the tables in the database and create the session
         """
-        from models import classes
+        module_name = "models"
+
+        classes = {}
+        for name, value in globals().items():
+            if isinstance(value, type) and value.__module__ == module_name:
+                classes[name] = value
         Base.metadata.create_all(self.__engine)
         self.__session = scoped_session(sessionmaker(bind=self.__engine,
                                                      expire_on_commit=False))

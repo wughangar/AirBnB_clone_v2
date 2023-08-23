@@ -4,7 +4,7 @@ from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.orm import relationship
 from models.city import City
-
+from models import storage
 
 class State(BaseModel, Base):
     """ State class """
@@ -12,7 +12,7 @@ class State(BaseModel, Base):
 
     name = Column(String(128), nullable=False)
 
-    if models.storage_type == 'db':
+    if storage.__class__.__name__ == 'DBStorage':
         cities = relationship("City",
                               backref="state",
                               cascade="all, delete-orphan")
@@ -24,6 +24,6 @@ class State(BaseModel, Base):
             """
             cityList = []
             for city_id, city in models.storage.all(City).items():
-                if city.state_id == self.id
-                cityList.append(city)
+                if city.state_id == self.id:
+                    cityList.append(city)
             return cityList
