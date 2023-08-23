@@ -148,6 +148,8 @@ class HBNBCommand(cmd.Cmd):
                         value = int(value)
                     except ValueError:
                         pass
+                if key == "password":
+                    value = value.replace('"', '').replace("'", "")
                 setattr(obj, key, value)
             if storage is not None:
                 obj.save()
