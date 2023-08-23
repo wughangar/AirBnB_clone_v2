@@ -33,16 +33,16 @@ class DBStorage:
         """
         query on the current db session
         """
-        from models import classes
+        classes = [key for key, value in globals().items() if isinstance(value, type)]
         objs = {}
         if cls:
-            query = self.__session.query(classes[cls])
+            query = self.__session.query(globals()[cls])
             for obj in query:
                 key = "{}.{}".format(obj.__class__.__name__, obj.id)
                 objs[key] = obj
         else:
-            for cls in classes.values():
-                query = self.__session.query(cls)
+            for cls in classes:
+                query = self.__session.query(globals()[cls])
                 for obj in query:
                     key = "{}.{}".format(obj.__class__.__name__, obj.id)
                     objs[key] = obj

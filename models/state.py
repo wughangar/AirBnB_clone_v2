@@ -23,7 +23,7 @@ class State(BaseModel, Base):
             this getter attribute retursn the list of city intances
             """
             cityList = []
-            for city_id, city in models.storage.all(City).items():
+            for city_id, city in storage.all(City).items():
                 if city.state_id == self.id:
                     cityList.append(city)
             return cityList
