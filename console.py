@@ -2,6 +2,7 @@
 """ Console Module """
 import cmd
 import sys
+from models.__init__ import storage
 from models.base_model import BaseModel
 from models.class_mappings import classes
 from models.user import User
@@ -73,7 +74,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[-1] =='}'\
+                    if pline[0] == '{' and pline[ -1] == '}'\
                             and type(eval(pline)) == dict:
                         _args = pline
                     else:
@@ -218,7 +219,7 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            del(storage.all()[key])
+            del (storage.all()[key])
             storage.save()
         except KeyError:
             print("** no instance found **")

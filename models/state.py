@@ -13,8 +13,10 @@ class State(BaseModel, Base):
 
     name = Column(String(128), nullable=False)
 
-    if 'HBNB_TYPE_STORAGE' in os.environ and os.environ['HBNB_TYPE_STORAGE'] == 'db':
-        cities = relationship("City", backref="state", cascade="all, delete-orphan")
+    if 'HBNB_TYPE_STORAGE' in os.environ and \
+            os.environ['HBNB_TYPE_STORAGE'] == 'db':
+        cities = relationship("City", backref="state",
+                              cascade="all, delete-orphan")
     else:
         @property
         def cities(self):

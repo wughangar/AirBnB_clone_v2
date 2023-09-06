@@ -5,6 +5,7 @@ from sqlalchemy import Column, String, ForeignKey, Float, Integer
 from sqlalchemy.orm import relationship
 from models.review import Review
 
+
 class Place(BaseModel, Base):
     """ A place to stay """
     __tablename__ = 'places'
