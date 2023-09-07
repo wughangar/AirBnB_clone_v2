@@ -5,10 +5,10 @@ import os
 import tarfile
 from datetime import datetime
 
+
 def do_pack():
     """Generate a .tgz archive from the web_static folder."""
 
-    # Replace '/path/to/web_static' with the actual absolute path to your web_static directory.
     web_static_dir = '~/AirBnB_clone'
 
     # Ensure the 'versions' directory exists
@@ -23,12 +23,14 @@ def do_pack():
 
     # Create the .tgz archive
     try:
-        with tarfile.open(os.path.join(versions_dir, archive_name), "w:gz") as tar:
+        with tarfile.open(os.path.join(versions_dir,
+                                       archive_name), "w:gz") as tar:
             tar.add(web_static_dir, arcname=os.path.basename(web_static_dir))
         return os.path.abspath(os.path.join(versions_dir, archive_name))
     except Exception as e:
         print(f"Error creating archive: {str(e)}")
         return None
+
 
 if __name__ == "__main__":
     archive_path = do_pack()
@@ -36,4 +38,3 @@ if __name__ == "__main__":
         print(f"Archive created successfully: {archive_path}")
     else:
         print("Archive creation failed.")
-
