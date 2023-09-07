@@ -6,6 +6,7 @@ import tarfile
 from datetime import datetime
 from fabric import task
 
+
 def do_pack():
     """Generate a .tgz archive from the web_static folder."""
 
