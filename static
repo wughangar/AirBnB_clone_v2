@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# bash script that sets up webservers for deployment of web_static
+
+# check if nginx is installed else install
+if ! command -v nginx &> /dev/null; then
+	sudo apt-get update
+	sudo apt-get install -y nginx
+	sudo service nginx start
+fi
+
+# create the folders and files if they dont exist
+if [ ! -d "/data/" ]; then
+	sudo mkdir -p /data/
+fi
+
+if [ ! -d "/data/web_static/" ]; then
+	sudo mkdir -p /data/web_static/
+fi
+
+if [ ! -d "/data/web_static/releases/" ]; then
+	sudo mkdir -p /data/web_static/releases/
+fi
+
+if [ ! -d "/data/web_static/shared/" ]; then
+	sudo mkdir -p /data/web_static/shared/
+fi
+
+if [ -d "/data/web_static/releases/test/" ]; then
+	sudo mkdir -p /data/web_static/releases/test/
+fi
+
+echo "<html>
+  <head>
+   <title>Test page for nginx</title>
+  </head>
+  <body>
+   <h1>My Cats name is Loki.</h1>
+  </body>
+</html>" | sudo tee /data/web_static/releases/test/index.html > /dev/null
+
+# creating a symbolic link and delete it if it exists
+sudo rm -f /data/web_static/current
+sudo ln -s /data/web_static/releases/test/ /data/web_static/current
+
+# giving ownership of /data/ folder to ubuntu user and group
+sudo chown -R ubuntu:ubuntu /data/
+
+#update nginx configurations using an alias
+echo "server {
+    listen 80 default_server;
+    server_name _;
+
+    location /hbnb_static {
+        alias /data/web_static/current/;
+    }
+
+}" | sudo tee /etc/nginx/sites-available/default
+# test nginx configurations
+sudo nginx -t
+
+# restart nginx to appy changes
+sudo service nginx restart
+
+# exit the script successfully
+exit 0
