@@ -9,7 +9,7 @@ def do_pack():
     """Generate a .tgz archive from the web_static folder."""
 
     # Replace '/path/to/web_static' with the actual absolute path to your web_static directory.
-    web_static_dir = '/path/to/web_static'
+    web_static_dir = '~/AirBnB_clone'
 
     # Ensure the 'versions' directory exists
     versions_dir = os.path.join(web_static_dir, 'versions')
