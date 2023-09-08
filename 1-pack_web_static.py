@@ -8,6 +8,7 @@ import os
 
 WEB_STATIC_PATH = '~/AirBnB_clone/web_static'
 
+
 @task
 def do_pack(c):
     """
@@ -22,12 +23,14 @@ def do_pack(c):
     archive_name = f"web_static_{timestamp}.tgz"
 
     # create the archive file
-    result = c.local(f"tar -czvf versions/{archive_name} -C {WEB_STATIC_PATH} .")
+    result = c.local(f"tar - czvf versions/{archive_name}
+                     - C {WEB_STATIC_PATH} .")
 
     if result.failed:
         return None
     else:
         return f"versions/{archive_name}"
+
 
 if __name__ == "__main__":
     result = do_pack()
