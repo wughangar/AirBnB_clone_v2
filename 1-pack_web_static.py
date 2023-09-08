@@ -5,12 +5,13 @@
 from fabric import task
 from datetime import datetime
 import os
+from fabric import local
 
 WEB_STATIC_PATH = '~/AirBnB_clone/web_static'
 
 
 @task
-def do_pack(c):
+def do_pack():
     """
     compressing contents fo webstatic
     """
@@ -23,8 +24,8 @@ def do_pack(c):
     archive_name = f"web_static_{timestamp}.tgz"
 
     # create the archive file
-    result = c.local(f"tar - czvf versions/{archive_name}
-                     - C {WEB_STATIC_PATH} .")
+    result = local(f"tar - czvf versions/{archive_name}
+                   - C {WEB_STATIC_PATH} .")
 
     if result.failed:
         return None
