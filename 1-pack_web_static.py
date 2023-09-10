@@ -17,7 +17,7 @@ def do_pack():
     archive_name = f"versions/web_static_{now.strftime('%Y%m%d%H%M%S')}.tgz"
 
     # Use the tar command to create the .tgz archive
-    result = local(f"tar -cvzf {archive_name} web_static")
+    result = local(f"tar -cvzf {archive_name} --dereference web_static")
 
     # Check if the tar command was successful
     if result.succeeded:
