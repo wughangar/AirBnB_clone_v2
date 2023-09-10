@@ -1,36 +1,49 @@
 #!/usr/bin/python3
 """
-Fabric script to distribute an archive to web servers
+Fabric script to distribute an archive to web servers.
 """
+from fabric.api import put, run, env
 import os
-from fabric.api import env, run, put
 
-env.hosts = ['34.207.190.83', '100.27.12.119']
+env.hosts = ['34.207.190.83', '52.91.178.39']
+env.user = 'ubuntu'
+env.key_filename = '~/.ssh/id_rsa'
 
 
 def do_deploy(archive_path):
-    """
-    Distributes an archive to web servers
-    """
+    """Distribute an archive to web servers."""
     if not os.path.exists(archive_path):
         return False
 
+    archive_filename = os.path.basename(archive_path)
+    archive_no_extension = os.path.splitext(archive_filename)[0]
+
     try:
-        archive_filename = os.path.basename(archive_path)
-        archive_no_ext = os.path.splitext(archive_filename)[0]
-        remote_tmp_path = "/tmp/{}".format(archive_filename)
-        remote_folder = "/data/web_static/releases/{}".format(archive_no_ext)
-
-        put(archive_path, remote_tmp_path)
-        run("mkdir -p {}".format(remote_folder))
-        run("tar -xzf {} -C {}".format(remote_tmp_path, remote_folder))
-        run("rm {}".format(remote_tmp_path))
-        run("mv {}/web_static/* {}/".format(remote_folder, remote_folder))
-        run("rm -rf {}/web_static".format(remote_folder))
+        put(archive_path, "/tmp/")
+        run("mkdir -p /data/web_static/releases/{}".format
+            (archive_no_extension))
+        run("tar -xzf /tmp/{} -C /data/web_static/releases/{}/"
+            .format(archive_filename, archive_no_extension))
+        run("rm /tmp/{}".format(archive_filename))
+        run("mv /data/web_static/releases/{}/web_static/* \
+            /data/web_static/releases/{}/"
+            .format(archive_no_extension, archive_no_extension))
+        run("rm -rf /data/web_static/releases/{}/web_static"
+            .format(archive_no_extension))
         run("rm -rf /data/web_static/current")
-        run("ln -s {} /data/web_static/current".format(remote_folder))
-
+        run("ln -s /data/web_static/releases/{}/ /data/web_static/current"
+            .format(archive_no_extension))
+        print("New version deployed!")
         return True
     except Exception as e:
-        print("An error occurred: {}".format(str(e)))
+        print("Deployment failed: {}".format(e))
         return False
+
+
+if __name__ == '__main__':
+    archive_path = input("Enter the path to the archive: ")
+    result = do_deploy(archive_path)
+    if result:
+        print("Deployment successful")
+    else:
+        print("Deployment failed")
