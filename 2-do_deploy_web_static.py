@@ -1,3 +1,8 @@
+#!/usr/bin/python3
+"""
+Deploy archive!
+"""
+
 from fabric.api import put, run, env
 import os
 
