@@ -1,41 +1,39 @@
 #!/usr/bin/python3
-""" 2-do_deploy_web_static """
+"""
+Fabric script to distribute an archive to web servers
+"""
+import os
+from fabric.api import run, put, env
 
-from fabric.api import env, put, sudo
-from os.path import exists
-
-env.hosts = ['34.207.190.83', '52.91.178.39']
+env.hosts = ['34.207.190.83', '100.27.12.119']
 
 
 def do_deploy(archive_path):
     """
-    Distribute the archive to web servers and perform deployment.
+    Distributes an archive to web servers
     """
-    if not exists(archive_path):
+    if not os.path.exists(archive_path):
         return False
 
     try:
-        # Upload the archive to /tmp/ on the web servers
+        # Upload the archive to the /tmp/ directory on the web server
         put(archive_path, '/tmp/')
-        # Extract archive to /data/web_static/releases/
-        filename = archive_path.split('/')[-1]
-        folder_name = filename.split('.')[0]
-        release_path = f'/data/web_static/releases/{folder_name}/'
-        sudo(f'mkdir -p {release_path}')
-        sudo(f'tar -xzf /tmp/{filename} -C {release_path}')
 
-        # Delete the archive from /tmp/
-        sudo(f'rm /tmp/{filename}')
-        # Move to serving directory
-        sudo(f"mv /data/web_static/releases/{folder_name}/web_static/* /data\
-/web_static/releases/{folder_name}/")
-        sudo(f"rm -rf /data/web_static/releases/{folder_name}/web_static")
-        # Delete the current symbolic link
+        # Extract the archive to the /data/web_static/releases/ directory
+        filename = os.path.basename(archive_path)
+        folder_name = '/data/web_static/releases/' + filename.split('.')[0]
+        run('mkdir -p {}'.format(folder_name))
+        run('tar -xzf /tmp/{} -C {}'.format(filename, folder_name))
+
+        # Delete the uploaded archive
+        run('rm /tmp/{}'.format(filename))
+
+        # Delete the symbolic link /data/web_static/current
         current_link = '/data/web_static/current'
-        sudo(f'rm -f {current_link}')
+        run('rm -f {}'.format(current_link))
 
         # Create a new symbolic link
-        sudo(f'ln -s {release_path} {current_link}')
+        run('ln -s {} {}'.format(folder_name, current_link))
 
         return True
     except Exception:
