@@ -8,10 +8,10 @@ from fabric.api import env, run, put, local
 from pack_web_static import do_pack
 from do_deploy_web_static import do_deploy
 
+# Define the Fabric environment variables
 env.hosts = ['34.207.190.83', '52.91.178.39']
 env.user = 'ubuntu'
 env.key_filename = '~/.ssh/id_rsa'
-
 
 def create_new_version():
     """
@@ -29,12 +29,23 @@ def create_new_version():
 
     return archive_path
 
-
 def deploy():
     """
     Create and distribute an archive to web servers
     """
+    # Create a new version
     archive_path = create_new_version()
+    
     if archive_path is None:
         return False
-    return do_deploy(archive_path)
+    
+    # Deploy the new version
+    deployment_result = do_deploy(archive_path)
+    
+    if deployment_result:
+        return True
+    else:
+        return False
+
+if __name__ == "__main__":
+    deploy()
