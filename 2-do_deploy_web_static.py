@@ -16,6 +16,7 @@ def do_deploy(archive_path):
         return False
 
     try:
+        print(f"Extracting {archive_path} to {folder_name}")
         # Upload the archive to the /tmp/ directory on the web server
         put(archive_path, '/tmp/')
 
