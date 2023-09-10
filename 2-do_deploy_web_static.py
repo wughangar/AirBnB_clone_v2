@@ -3,7 +3,7 @@
 Fabric script to distribute an archive to web servers
 """
 import os
-from fabric.api import run, put, env
+from fabric.api import env, run, put
 
 env.hosts = ['34.207.190.83', '100.27.12.119']
 
@@ -16,26 +16,21 @@ def do_deploy(archive_path):
         return False
 
     try:
-        print(f"Extracting {archive_path} to {folder_name}")
-        # Upload the archive to the /tmp/ directory on the web server
-        put(archive_path, '/tmp/')
+        archive_filename = os.path.basename(archive_path)
+        archive_no_ext = os.path.splitext(archive_filename)[0]
+        remote_tmp_path = "/tmp/{}".format(archive_filename)
+        remote_folder = "/data/web_static/releases/{}".format(archive_no_ext)
 
-        # Extract the archive to the /data/web_static/releases/ directory
-        filename = os.path.basename(archive_path)
-        folder_name = '/data/web_static/releases/' + filename.split('.')[0]
-        run('mkdir -p {}'.format(folder_name))
-        run('tar -xzf /tmp/{} -C {}'.format(filename, folder_name))
-
-        # Delete the uploaded archive
-        run('rm /tmp/{}'.format(filename))
-
-        # Delete the symbolic link /data/web_static/current
-        current_link = '/data/web_static/current'
-        run('rm -f {}'.format(current_link))
-
-        # Create a new symbolic link
-        run('ln -s {} {}'.format(folder_name, current_link))
+        put(archive_path, remote_tmp_path)
+        run("mkdir -p {}".format(remote_folder))
+        run("tar -xzf {} -C {}".format(remote_tmp_path, remote_folder))
+        run("rm {}".format(remote_tmp_path))
+        run("mv {}/web_static/* {}/".format(remote_folder, remote_folder))
+        run("rm -rf {}/web_static".format(remote_folder))
+        run("rm -rf /data/web_static/current")
+        run("ln -s {} /data/web_static/current".format(remote_folder))
 
         return True
-    except Exception:
+    except Exception as e:
+        print("An error occurred: {}".format(str(e)))
         return False
