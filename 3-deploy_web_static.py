@@ -1,51 +1,57 @@
 #!/usr/bin/python3
 """
-Fabric script to create and distribute an archive to web servers
+Fabric script methods:
+    do_pack: packs web_static/ files into .tgz archive
+    do_deploy: deploys archive to webservers
+    deploy: do_packs && do_deploys
+Usage:
+    fab -f 3-deploy_web_static.py deploy -i my_ssh_private_key -u ubuntu
 """
-
-import os
-from fabric.api import env, run, put, local
-from pack_web_static import do_pack
-from do_deploy_web_static import do_deploy
-
-# Define the Fabric environment variables
+from fabric.api import local, env, put, run
+from time import strftime
+import os.path
 env.hosts = ['34.207.190.83', '52.91.178.39']
-env.user = 'ubuntu'
-env.key_filename = '~/.ssh/id_rsa'
 
-def create_new_version():
+
+def do_pack():
+    """generate .tgz archive of web_static/ folder"""
+    timenow = strftime("%Y%M%d%H%M%S")
+    try:
+        local("mkdir -p versions")
+        filename = "versions/web_static_{}.tgz".format(timenow)
+        local("tar -cvzf {} web_static/".format(filename))
+        return filename
+    except:
+        return None
+
+
+def do_deploy(archive_path):
     """
-    Create a new version of the archive locally with my_index.html inside
+    Deploy archive to web server
     """
-    # Create a directory for the new version
-    if not os.path.exists("versions"):
-        os.makedirs("versions")
+    if os.path.isfile(archive_path) is False:
+        return False
+    try:
+        filename = archive_path.split("/")[-1]
+        no_ext = filename.split(".")[0]
+        path_no_ext = "/data/web_static/releases/{}/".format(no_ext)
+        symlink = "/data/web_static/current"
+        put(archive_path, "/tmp/")
+        run("mkdir -p {}".format(path_no_ext))
+        run("tar -xzf /tmp/{} -C {}".format(filename, path_no_ext))
+        run("rm /tmp/{}".format(filename))
+        run("mv {}web_static/* {}".format(path_no_ext, path_no_ext))
+        run("rm -rf {}web_static".format(path_no_ext))
+        run("rm -rf {}".format(symlink))
+        run("ln -s {} {}".format(path_no_ext, symlink))
+        return True
+    except:
+        return False
 
-    # Copy 'my_index.html' into the new version directory
-    local("cp my_index.html versions/")
-
-    # Create the archive with the new version
-    archive_path = do_pack()
-
-    return archive_path
 
 def deploy():
-    """
-    Create and distribute an archive to web servers
-    """
-    # Create a new version
-    archive_path = create_new_version()
-    
+    archive_path = do_pack()
     if archive_path is None:
         return False
-    
-    # Deploy the new version
-    deployment_result = do_deploy(archive_path)
-    
-    if deployment_result:
-        return True
-    else:
-        return False
-
-if __name__ == "__main__":
-    deploy()
+    success = do_deploy(archive_path)
+    return success
