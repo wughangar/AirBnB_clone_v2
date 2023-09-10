@@ -5,6 +5,7 @@ Deploy archive!
 
 from fabric.api import put, run, env
 import os
+import shutil
 
 # Define server IP addresses as a list
 server_ips = ['34.207.190.83', '52.91.178.39']
@@ -12,6 +13,13 @@ server_ips = ['34.207.190.83', '52.91.178.39']
 # Set Fabric environment variables
 env.user = 'ubuntu'
 env.key_filename = '/path/to/your/ssh/key'
+
+
+# Define local paths and filenames
+archive_path = "path/to/your/archive.tar.gz"
+local_html_dir = "/path/to/local/html/directory"
+archive_filename = os.path.basename(archive_path)
+archive_no_extension = os.path.splitext(archive_filename)[0]
 
 
 def do_deploy(archive_path):
@@ -57,10 +65,49 @@ def do_deploy(archive_path):
         return False
 
 
+def deploy_locally():
+    """Deploy code locally."""
+    try:
+        # Check if the archive file exists locally
+        if not os.path.exists(archive_path):
+            print(f"Archive file not found at {archive_path}")
+            return False
+
+        # Uncompress the archive locally
+        shutil.unpack_archive(archive_path, local_html_dir)
+
+        # Update the symbolic link locally
+        local_current_link = os.path.join(local_html_dir, 'current')
+        local_new_link = os.path.join(local_html_dir, archive_no_extension)
+
+        if os.path.exists(local_current_link):
+            os.unlink(local_current_link)
+
+        os.symlink(local_new_link, local_current_link)
+
+        # Files are now available locally
+        print("Local deployment successful!")
+        return True
+    except Exception as e:
+        print("Local deployment failed: {}".format(e))
+        return False
+
+
 if __name__ == '__main__':
     archive_path = input("Enter the path to the archive: ")
-    result = do_deploy(archive_path)
-    if result:
-        print("Deployment successful")
+
+    # Deploy remotely
+    remote_result = do_deploy(archive_path)
+
+    # Deploy locally
+    local_result = deploy_locally()
+
+    if remote_result:
+        print("Deployment to remote servers successful")
     else:
-        print("Deployment failed")
+        print("Deployment to remote servers failed")
+
+    if local_result:
+        print("Local deployment successful")
+    else:
+        print("Local deployment failed")
