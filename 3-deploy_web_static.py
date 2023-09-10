@@ -1,64 +1,57 @@
 #!/usr/bin/python3
 """
-Fabric script methods:
-    do_pack: packs web_static/ files into .tgz archive
-    do_deploy: deploys archive to webservers
-    deploy: do_packs && do_deploys
-Usage:
-    fab -f 3-deploy_web_static.py deploy -i my_ssh_private_key -u ubuntu
+Full deployment
 """
-from fabric.api import local, env, put, run
-from time import strftime
-import os.path
+
+from fabric.api import *
+from datetime import datetime
+import os
 
 env.hosts = ['34.207.190.83', '52.91.178.39']
+env.user = '<ubuntu'
+env.key_filename = '~/.ssh/id_rsa'
 
 
 def do_pack():
-    """generate .tgz archive of web_static/ folder"""
-    timenow = strftime("%Y%M%d%H%M%S")
-    try:
-        local("mkdir -p versions")
-        filename = "versions/web_static_{}.tgz".format(timenow)
-        local("tar -cvzf {} web_static/".format(filename))
-        return filename
-    except Exception as e:
-        print("An error occurred while creating the archive:", str(e))
+    """
+    fo pack function
+    """
+    if not os.path.exists("versions"):
+        os.makedirs("versions")
+    now = datetime.utcnow()
+    archive_name = f"versions/web_static_{now.strftime('%Y%m%d%H%M%S')}.tgz"
+    result = local(f"tar -cvzf {archive_name} web_static")
+    if result.succeeded:
+        return archive_name
+    else:
         return None
-
 
 def do_deploy(archive_path):
     """
-    Deploy archive to web server
+    do deploy function
     """
-    if os.path.isfile(archive_path) is False:
+    if not os.path.exists(archive_path):
         return False
     try:
-        filename = archive_path.split("/")[-1]
-        no_ext = filename.split(".")[0]
-        path_no_ext = "/data/web_static/releases/{}/".format(no_ext)
-        symlink = "/data/web_static/current"
         put(archive_path, "/tmp/")
-        run("mkdir -p {}".format(path_no_ext))
-        run("tar -xzf /tmp/{} -C {}".format(filename, path_no_ext))
-        run("rm /tmp/{}".format(filename))
-        run("mv {}web_static/* {}".format(path_no_ext, path_no_ext))
-        run("rm -rf {}web_static".format(path_no_ext))
-        run("rm -rf {}".format(symlink))
-        run("ln -s {} {}".format(path_no_ext, symlink))
+        archive_file = archive_path.split("/")[-1]
+        archive_folder = archive_file.split(".")[0]
+        run(f"mkdir -p /data/web_static/releases/{archive_folder}/")
+        run(f"tar -xzf /tmp/{archive_file} -C /data/web_static/releases/{archive_folder}/")
+        run(f"rm /tmp/{archive_file}")
+        run(f"mv /data/web_static/releases/{archive_folder}/web_static/* /data/web_static/releases/{archive_folder}/")
+        run(f"rm -rf /data/web_static/releases/{archive_folder}/web_static")
+        run(f"rm -rf /data/web_static/current")
+        run(f"ln -s /data/web_static/releases/{archive_folder}/ /data/web_static/current")
         return True
-    except Exception as e:
-        print("An error occurred during deployment:", str(e))
+    except:
         return False
-
 
 def deploy():
+    """
+    do deploy function
+    """
     archive_path = do_pack()
-    if archive_path is None:
+    if not archive_path:
         return False
-    success = do_deploy(archive_path)
-    return success
-
-
-if __name__ == "__main__":
-    deploy()
+    return do_deploy(archive_path)
