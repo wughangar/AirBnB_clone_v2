@@ -16,8 +16,8 @@ env.key_filename = '/path/to/your/ssh/key'
 
 
 # Define local paths and filenames
-archive_path = "path/to/your/archive.tar.gz"
-local_html_dir = "/path/to/local/html/directory"
+archive_path = "/AirBnB_clone_v2/test_archive.tgz"
+local_html_dir = "/root/web_files"
 archive_filename = os.path.basename(archive_path)
 archive_no_extension = os.path.splitext(archive_filename)[0]
 
