@@ -1,113 +1,63 @@
 #!/usr/bin/python3
-"""
-Deploy archive!
-"""
+""" 2-do_deploy_web_static """
 
-from fabric.api import put, run, env
-import os
-import shutil
-
-# Define server IP addresses as a list
-server_ips = ['34.207.190.83', '52.91.178.39']
-
-# Set Fabric environment variables
-env.user = 'ubuntu'
-env.key_filename = '/path/to/your/ssh/key'
+from fabric.api import env, put, sudo, local
+from os.path import exists
+from datetime import datetime
+env.hosts = ['34.207.190.83', '52.91.178.39', '127.0.0.1']
 
 
-# Define local paths and filenames
-archive_path = "/AirBnB_clone_v2/test_archive.tgz"
-local_html_dir = "/root/web_files"
-archive_filename = os.path.basename(archive_path)
-archive_no_extension = os.path.splitext(archive_filename)[0]
+def do_pack():
+    """
+    Create a .tgz archive from the web_static folder.
+    """
+    try:
+        # Create the 'versions' directory if it doesn't exist
+        local("mkdir -p versions")
+
+        # Generate the archive name using the current date and time
+        now = datetime.now()
+        archive_name = f"web_static_{now.strftime('%Y%m%d%H%M%S')}.tgz"
+
+        # Use the tar command to create the .tgz archive
+        local(f"tar -czvf versions/{archive_name} web_static")
+
+        # Return the archive path if successful
+        return f"versions/{archive_name}"
+    except Exception:
+        return None
 
 
 def do_deploy(archive_path):
-    """Distribute an archive to web servers."""
-
-    # Check if the archive file exists
-    if not os.path.exists(archive_path):
-        print(f"Archive file not found at {archive_path}")
+    """
+    Distribute the archive to web servers and perform deployment.
+    """
+    if not exists(archive_path):
         return False
-
-    # Set the hosts dynamically based on server_ips
-    env.hosts = server_ips
-
-    archive_filename = os.path.basename(archive_path)
-    archive_no_extension = os.path.splitext(archive_filename)[0]
 
     try:
-        # Upload the archive to the /tmp/ directory of the web server
-        put(archive_path, "/tmp/")
+        # Upload the archive to /tmp/ on the web servers
+        put(archive_path, '/tmp/')
+        # Extract archive to /data/web_static/releases/
+        filename = archive_path.split('/')[-1]
+        folder_name = filename.split('.')[0]
+        release_path = f'/data/web_static/releases/{folder_name}/'
+        sudo(f'mkdir -p {release_path}')
+        sudo(f'tar -xzf /tmp/{filename} -C {release_path}')
 
-        # Uncompress the archive to the specified folder
-        run("mkdir -p /data/web_static/releases/{}"
-            .format(archive_no_extension))
-        run("tar -xzf /tmp/{} -C /data/web_static/releases/{}"
-            .format(archive_filename, archive_no_extension))
+        # Delete the archive from /tmp/
+        sudo(f'rm /tmp/{filename}')
+        # Move to serving directory
+        sudo(f"mv /data/web_static/releases/{folder_name}/web_static/* /data\
+/web_static/releases/{folder_name}/")
+        sudo(f"rm -rf /data/web_static/releases/{folder_name}/web_static")
+        # Delete the current symbolic link
+        current_link = '/data/web_static/current'
+        sudo(f'rm -f {current_link}')
 
-        # Clean up and create symbolic links
-        run("rm /tmp/{}"
-            .format(archive_filename))
-        run("mv /data/web_static/releases/{}/web_static/* "
-            "/data/web_static/releases/{}"
-            .format(archive_no_extension, archive_no_extension))
-        run("rm -rf /data/web_static/releases/{}/web_static"
-            .format(archive_no_extension))
-        run("rm -rf /data/web_static/current")
-        run("ln -s /data/web_static/releases/{}/ "
-            "/data/web_static/current"
-            .format(archive_no_extension))
-        print("New version deployed!")
+        # Create a new symbolic link
+        sudo(f'ln -s {release_path} {current_link}')
+
         return True
-    except Exception as e:
-        print("Deployment failed: {}".format(e))
+    except Exception:
         return False
-
-
-def deploy_locally():
-    """Deploy code locally."""
-    try:
-        # Check if the archive file exists locally
-        if not os.path.exists(archive_path):
-            print(f"Archive file not found at {archive_path}")
-            return False
-
-        # Uncompress the archive locally
-        shutil.unpack_archive(archive_path, local_html_dir)
-
-        # Update the symbolic link locally
-        local_current_link = os.path.join(local_html_dir, 'current')
-        local_new_link = os.path.join(local_html_dir, archive_no_extension)
-
-        if os.path.exists(local_current_link):
-            os.unlink(local_current_link)
-
-        os.symlink(local_new_link, local_current_link)
-
-        # Files are now available locally
-        print("Local deployment successful!")
-        return True
-    except Exception as e:
-        print("Local deployment failed: {}".format(e))
-        return False
-
-
-if __name__ == '__main__':
-    archive_path = input("Enter the path to the archive: ")
-
-    # Deploy remotely
-    remote_result = do_deploy(archive_path)
-
-    # Deploy locally
-    local_result = deploy_locally()
-
-    if remote_result:
-        print("Deployment to remote servers successful")
-    else:
-        print("Deployment to remote servers failed")
-
-    if local_result:
-        print("Local deployment successful")
-    else:
-        print("Local deployment failed")
