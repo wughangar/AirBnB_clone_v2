@@ -30,7 +30,7 @@ def text_display(text):
     displays text after replacing _ with spaces
     """
     final_text = re.sub('_', ' ', text)
-    return f'C {dinal_text}'
+    return f'C {final_text}'
 
 
 if __name__ == '__main__':
