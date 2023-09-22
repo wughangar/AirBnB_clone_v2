@@ -33,13 +33,15 @@ def text_display(text):
     return f'C {final_text}'
 
 
+@app.route('python', strict_slashes=False)
 @app.route('/python/<text>', strict_slashes=False)
 def python_display(text="is cool"):
     """
     displays python text
     """
-    final_text = re.sub('_', ' ', text)
-    return f'Python {final_text}'
+    if text != 'is cool':
+        final_text = re.sub('_', ' ', text)
+        return f'Python {final_text}'
 
 
 if __name__ == '__main__':
