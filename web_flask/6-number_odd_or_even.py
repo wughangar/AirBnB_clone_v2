@@ -73,7 +73,7 @@ def odd_even(n):
     """
     ans = "even" if n % 2 == 0 else "odd"
     if isinstance(n, int):
-        return render_template('6-number_odd_even_template.html', n=n, ans=ans)
+        return (render_template('6-number_odd_or_even.html', n=n, ans=ans))
     else:
         abort(404)
 
