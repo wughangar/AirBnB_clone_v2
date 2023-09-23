@@ -4,7 +4,8 @@
 """
 
 import re
-from flask import Flask, render_template
+from flask import Flask
+from flask import render_template
 app = Flask(__name__)
 
 
@@ -58,7 +59,10 @@ def number_template(n):
     """
     render template function
     """
-    return render_template('5-number_template.html', n=n)
+    if isinstance(n, int):
+        return render_template('5-number_template.html', n=n)
+    else:
+         return "Not a valid integer"
 
 
 @app.route('number_template/<int:n>', strict_slashes=False)
@@ -67,7 +71,10 @@ def odd_even(n):
     function to check if its odd or even
     """
     ans = "even" if n % 2 == 0 else "odd"
-    return render_template('6-number_odd_even_template.html', n=n, ans=ans)
+    if isinstance(n, int):
+        return render_template('6-number_odd_even_template.html', n=n, ans=ans)
+    else:
+         return "Not a valid integer"
 
 
 if __name__ == '__main__':
