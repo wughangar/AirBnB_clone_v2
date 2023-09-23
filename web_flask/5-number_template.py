@@ -5,7 +5,7 @@
 
 import re
 from flask import Flask
-from flask import render_template
+from flask import render_template, abort
 app = Flask(__name__)
 
 
@@ -51,7 +51,7 @@ def is_int(n):
     if isinstance(n, int):
         return f"{n} is a number"
     else:
-        return "Not a valid integer"
+        abort(404)
 
 
 @app.route('/number_template/<int:n>', strict_slashes=False)
@@ -62,7 +62,7 @@ def number_template(n):
     if isinstance(n, int):
         return (render_template('5-number.html', n=n))
     else:
-        return "Not a valid integer"
+        abort(404)
 
 
 if __name__ == '__main__':
