@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-5. Number template
+6. Odd or even?
 """
 
 import re
@@ -59,6 +59,12 @@ def number_template(n):
     render template function
     """
     return render_template('number_template.html', n=n)
+
+
+@app.route('number_template/<int:n>', strict_slashes=False)
+def odd_even(n):
+    ans = "even" if n % 2 == 0 else "odd"
+    return render_template('number_odd_even_template.html', n=n, result=result)
 
 
 if __name__ == '__main__':
