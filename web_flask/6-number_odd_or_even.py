@@ -58,7 +58,7 @@ def number_template(n):
     """
     render template function
     """
-    return render_template('number_template.html', n=n)
+    return render_template('5-number_template.html', n=n)
 
 
 @app.route('number_template/<int:n>', strict_slashes=False)
@@ -67,7 +67,7 @@ def odd_even(n):
     function to check if its odd or even
     """
     ans = "even" if n % 2 == 0 else "odd"
-    return render_template('number_odd_even_template.html', n=n, ans=ans)
+    return render_template('6-number_odd_even_template.html', n=n, ans=ans)
 
 
 if __name__ == '__main__':
