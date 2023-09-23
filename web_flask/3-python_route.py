@@ -34,12 +34,12 @@ def text_display(text):
 
 
 @app.route('/python/<text>', strict_slashes=False)
-def python(text="is cool"):
+def python_text(text="is cool"):
     """
     displays python text
     """
-    tetx = text.replace("_", " ")
-    return f'Python {text}'
+    final_text = re.sub('_', ' ', text)
+    return f'Python {final_text}'
 
 
 if __name__ == '__main__':
