@@ -5,7 +5,7 @@
 
 import re
 from flask import Flask
-from flask import render_template
+from flask import render_template, abort
 app = Flask(__name__)
 
 
@@ -34,6 +34,7 @@ def text_display(text):
     return f'C {final_text}'
 
 
+@app.route('/python', strict_slashes=False)
 @app.route('/python/<text>', strict_slashes=False)
 def python_text(text="is cool"):
     """
@@ -62,7 +63,7 @@ def number_template(n):
     if isinstance(n, int):
         return render_template('5-number_template.html', n=n)
     else:
-         return "Not a valid integer"
+        abort(404)
 
 
 @app.route('number_template/<int:n>', strict_slashes=False)
@@ -74,11 +75,11 @@ def odd_even(n):
     if isinstance(n, int):
         return render_template('6-number_odd_even_template.html', n=n, ans=ans)
     else:
-         return "Not a valid integer"
+        abort(404)
 
 
 if __name__ == '__main__':
     """
     start the aplication on port 5000
     """
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000)
