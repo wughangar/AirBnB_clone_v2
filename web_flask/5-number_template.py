@@ -55,7 +55,7 @@ def is_int(n):
         abort(404)
 
 
-@app.route('/number_template/<int:n>', strict_slashes=False)
+@app.route('/number_template/<n>', strict_slashes=False)
 def number_template(n):
     """
     render template function
@@ -70,4 +70,4 @@ if __name__ == '__main__':
     """
     start the aplication on port 5000
     """
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=5000)
