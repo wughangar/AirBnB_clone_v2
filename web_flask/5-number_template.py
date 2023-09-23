@@ -58,7 +58,10 @@ def number_template(n):
     """
     render template function
     """
-    return render_template('number_template.html', n=n)
+    if isinstance(n, int):
+        return render_template('number_template.html', n=n)
+    else:
+        return "Not a valid integer"
 
 
 if __name__ == '__main__':
