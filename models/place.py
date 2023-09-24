@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """ Place Module for HBNB project """
 from models.base_model import BaseModel, Base
-from sqlalchemy import Column, String, ForeignKey, Float, Integer
+from sqlalchemy import Column, String, ForeignKey, Float, Integer, Table
 from sqlalchemy.orm import relationship
 from models.review import Review
 
@@ -29,27 +29,23 @@ class Place(BaseModel, Base):
     price_by_night = Column(Integer, nullable=False, default=0)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    amenity_ids = []
 
-    reviews = relationship("Review",
-                           backref="place",
+    amenities = relationship('Amenity', secondary=place_amenity,
+                             viewonly=False, back_populates='place_amenities')
+
+    reviews = relationship("Review", backref="place",
                            cascade="all, delete-orphan")
 
-    @amenities.setter
-    def amenities(self, amenity):
-        if isinstance(amenity, Amenity):
+    @property
+    def amenity_ids(self):
+        """Getter attribute for amenity_ids."""
+        return [amenity.id for amenity in self.amenities]
+
+    @amenity_ids.setter
+    def amenity_ids(self, amenity_id):
+        """Setter attribute for amenity_ids."""
+        if isinstance(amenity_id, str):
             if amenity.id not in self.amenity_ids:
                 self.amenity_ids.append(amenity.id)
 
     amenity_ids = []
-
-    # Define the relationship with Amenity through place_amenity
-    amenities = relationship(
-        'Amenity',
-        secondary=place_amenity,
-        viewonly=False,
-        back_populates='place_amenities'
-    )
-
-    reviews = relationship("Review", backref="place",
-                           cascade="all, delete-orphan")
