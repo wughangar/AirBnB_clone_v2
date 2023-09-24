@@ -158,6 +158,7 @@ class HBNBCommand(cmd.Cmd):
                 if storage is not None:
                     storage.new(obj)
                     storage.save()
+                    print(obj.id)
                 else:
                     print("** storage not connect **")
 
