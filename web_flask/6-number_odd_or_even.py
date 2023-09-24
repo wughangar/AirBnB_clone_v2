@@ -66,13 +66,13 @@ def number_template(n):
         abort(404)
 
 
-@app.route('number_template/<int:n>', strict_slashes=False)
+@app.route('/number_template/<int:n>', strict_slashes=False)
 def odd_even(n):
     """
     function to check if its odd or even
     """
-    ans = "even" if n % 2 == 0 else "odd"
     if isinstance(n, int):
+        ans = "even" if n % 2 == 0 else "odd"
         return (render_template('6-number_odd_or_even.html', n=n, ans=ans))
     else:
         abort(404)
