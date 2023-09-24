@@ -5,7 +5,7 @@ db storage engine
 
 from models.base_model import Base
 from os import getenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.city import City
 from models.user import User
@@ -57,7 +57,8 @@ class DBStorage:
                 objs[key] = obj
         else:
             for cls in classes:
-                query = self.__session.query(cls)
+                query = self.__session.query(text(cls))
+                 
                 for obj in query:
                     key = "{}.{}".format(obj.__class__.__name__, obj.id)
                     objs[key] = obj

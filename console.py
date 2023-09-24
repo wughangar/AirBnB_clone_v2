@@ -126,11 +126,7 @@ class HBNBCommand(cmd.Cmd):
             else:
                 cls = HBNBCommand.classes[cls_name]
                 obj = cls()
-                print("\n\n\nARGS: ", args[1:])
-
-                param_str = " ".join(args[1:])
-                param_pairs = param_str.split(",")
-                print("PARAM PAIRS: ", param_pairs)
+                param_pairs = args[1:]
                 for pair in param_pairs:
                     pair = pair.strip()
                     if '=' not in pair:
@@ -162,7 +158,6 @@ class HBNBCommand(cmd.Cmd):
                 if storage is not None:
                     storage.new(obj)
                     storage.save()
-                    print(obj.id)
                 else:
                     print("** storage not connect **")
 
@@ -173,6 +168,8 @@ class HBNBCommand(cmd.Cmd):
 
     def do_show(self, args):
         """ Method to show an individual object """
+        print("do_show, args: ", args)
+
         new = args.partition(" ")
         c_name = new[0]
         c_id = new[2]
@@ -241,19 +238,17 @@ class HBNBCommand(cmd.Cmd):
         """ Shows all objects, or all objects of a class"""
         from models.__init__ import storage
         print_list = []
-
         if args:
             args = args.split(' ')[0]  # remove possible trailing args
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage.all().items():
+            for k, v in storage.all(HBNBCommand.classes[args]).items():
                 if k.split('.')[0] == args:
                     print_list.append(str(v))
         else:
             for k, v in storage.all().items():
                 print_list.append(str(v))
-        print(print_list)
 
     def help_all(self):
         """ Help information for the all command """
