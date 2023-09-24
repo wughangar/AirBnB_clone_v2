@@ -73,7 +73,7 @@ class HBNBCommand(cmd.Cmd):
                 pline = pline[2].strip()  # pline is now str
                 if pline:
                     # check for *args or **kwargs
-                    if pline[0] == '{' and pline[ -1] == '}'\
+                    if pline[0] == '{' and pline[-1] == '}'\
                             and type(eval(pline)) == dict:
                         _args = pline
                     else:
@@ -118,44 +118,52 @@ class HBNBCommand(cmd.Cmd):
         args = args.split()
         if not args:
             print("** class name missing **")
-        elif args[0] not in globals():
-            print("** class doesn't exist **")
         else:
-            cls = globals().get(args[0])
-            obj = cls()
-
-            param_str = " ".join(args[1:])
-            param_pairs = param_str.split(",")
-            for pair in param_pairs:
-                pair = pair.strip()
-                if '=' not in pair:
-                    print("** invalid parameter format:", pair)
-                    continue
-                key, value = pair.split("=", 1)
-                key = key.strip()
-                value = value.strip()
-
-                if value.startswith('"') and value.endswith('"'):
-                    value = value[1:-1].replace('_', ' ')
-                elif '.' in value:
-                    try:
-                        value = float(value)
-                    except ValueError:
-                        print("** invalid float value **", value)
-                        continue
-                else:
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        pass
-                if key == "password":
-                    value = value.replace('"', '').replace("'", "")
-                setattr(obj, key, value)
-            if storage is not None:
-                obj.save()
-                print(obj.id)
+            cls_name = args[0]
+            if cls_name not in HBNBCommand.classes:
+                print("** class doesn't exist **")
             else:
-                print("** storage not connect **")
+                cls = HBNBCommand.classes[cls_name]
+                obj = cls()
+                print("\n\n\nARGS: ", args[1:])
+
+                param_str = " ".join(args[1:])
+                param_pairs = param_str.split(",")
+                print("PARAM PAIRS: ", param_pairs)
+                for pair in param_pairs:
+                    pair = pair.strip()
+                    if '=' not in pair:
+                        print("** invalid parameter format:", pair)
+                        continue
+                    key, value = pair.split("=", 1)
+                    key = key.strip()
+                    value = value.strip()
+
+                    if value.startswith('"') and value.endswith('"'):
+                        value = value[1:-1].replace('_', ' ')
+                    elif '.' in value:
+                        try:
+                            value = float(value)
+                        except ValueError:
+                            print("** invalid float value **", value)
+                            continue
+                    else:
+                        try:
+                            value = int(value)
+                        except ValueError:
+                            pass
+                    if key == "password":
+                        value = value.replace('"', '').replace("'", "")
+                    setattr(obj, key, value)
+
+                obj_dict = obj.to_dict()
+
+                if storage is not None:
+                    storage.new(obj)
+                    storage.save()
+                    print(obj.id)
+                else:
+                    print("** storage not connect **")
 
     def help_create(self):
         """ Help information for the create method """
