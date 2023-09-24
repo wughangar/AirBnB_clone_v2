@@ -1,6 +1,21 @@
 #!/usr/bin/python3
 """This module defines a class to manage file storage for hbnb clone"""
 import json
+from datetime import datetime
+from sqlalchemy.orm import state
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    """
+    json
+    """
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        if isinstance(obj, state.InstanceState):
+            return None
+        return super().default(obj)
+
 
 class FileStorage:
     """This class manages storage of hbnb models in JSON format"""
@@ -31,9 +46,9 @@ class FileStorage:
             temp.update(FileStorage.__objects)
             for key, val in temp.items():
                 temp[key] = val.to_dict()
-            
+
             print(temp)
-            json.dump(temp, f)
+            json.dump(temp, f, cls=CustomJSONEncoder)
 
     def reload(self):
         """Loads storage dictionary from file"""
