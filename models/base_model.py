@@ -51,7 +51,6 @@ class BaseModel:
         dictionary['__class__'] = str(type(self).__name__)
         dictionary['id'] = self.id
 
-        dictionary['name'] = self.name
         dictionary['created_at'] = self.created_at
         dictionary['updated_at'] = self.updated_at
 
