@@ -6,6 +6,16 @@ from sqlalchemy.orm import relationship
 from models.review import Review
 
 
+place_amenity = Table(
+        'place_amenity',
+        Base.metadata,
+        Column('place_id', String(60), ForeignKey('places.id'),
+               primary_key=True, nullable=False),
+        Column('amenity_id', String(60), ForeignKey('amenities.id'),
+               primary_key=True, nullable=False)
+)
+
+
 class Place(BaseModel, Base):
     """ A place to stay """
     __tablename__ = 'places'
@@ -23,4 +33,23 @@ class Place(BaseModel, Base):
 
     reviews = relationship("Review",
                            backref="place",
+                           cascade="all, delete-orphan")
+
+    @amenities.setter
+    def amenities(self, amenity):
+        if isinstance(amenity, Amenity):
+            if amenity.id not in self.amenity_ids:
+                self.amenity_ids.append(amenity.id)
+
+    amenity_ids = []
+
+    # Define the relationship with Amenity through place_amenity
+    amenities = relationship(
+        'Amenity',
+        secondary=place_amenity,
+        viewonly=False,
+        back_populates='place_amenities'
+    )
+
+    reviews = relationship("Review", backref="place",
                            cascade="all, delete-orphan")
